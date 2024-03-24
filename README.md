@@ -47,6 +47,7 @@ In this example, the evaluator will first check whether './save/dinov2/[result_n
 KEN provides an interpretable evaluation between datasets and generative models. Users may retrieve the most similar samples belonging to the novel modes by eigenvectors. Here is an example of AFHQ w.r.t. ImageNet-dogs (novel modes are non-dog images)
 
 ![top novel mode of AFHQ w.r.t. ImageNet dogs](./media/summary.png)
+![top novel modes between datasets](./media/datasets.png)
 
 To retrieve novel modes, simply call:
 ```python
