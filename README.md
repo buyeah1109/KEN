@@ -3,6 +3,15 @@
 This repository provides an official implementation of a paper that under double-blind review. The repository will be de-anonymized and released to the public after the review process.
 
 ## Quick Start
+Pipeline:
+<ol>
+    <li> Initialize KEN evaluator </li>
+    <li> Select feature extractor (Currently support <a href='https://arxiv.org/abs/1512.00567'> Inception-V3</a>, <a href='https://arxiv.org/abs/2304.07193'> DINOv2</a>, <a href='https://arxiv.org/abs/2103.00020'> CLIP</a>)
+    <li> Compute KEN score and visualize novel modes </li>
+</ol>
+
+<br>
+
 ```python 
 from KEN.metric.KEN import KEN_Evaluator
 
