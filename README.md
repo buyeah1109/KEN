@@ -47,9 +47,26 @@ In this example, the evaluator will first check whether './save/dinov2/[result_n
 KEN provides an interpretable evaluation between datasets and generative models. Users may retrieve the most similar samples belonging to the novel modes by eigenvectors. Here is an example of AFHQ w.r.t. ImageNet-dogs (novel modes are non-dog images)
 
 ![top novel mode of AFHQ w.r.t. ImageNet dogs](./media/summary.png)
-![top novel modes between datasets](./media/datasets.png)
+### Examples of Novel Modes Detection
+We provide some examples and their settings for the user to try on. We observe that all feature extractors can successfully detect novel modes, and different extractors may have different clustering preference (e.g. semantical/class similarity, visual similarity).
 
-To retrieve novel modes, simply call:
+#### Example 1
+
+KEN Parameters: 
+$\sigma=20, \eta=5, \text{samples}=5000$ <br>
+Feature Extractor: DINOv2
+
+![top novel modes between datasets](./media/afhq_cat_dino.001.jpeg)
+
+#### Example 2
+
+KEN Parameters: 
+$\sigma=5, \eta=5, \text{samples}=5000$ <br>
+Feature Extractor: CLIP
+
+![top novel modes between datasets](./media/afhq_cat_clip.001.jpeg)
+
+To retrieve novel modes, after setting up feature extractor, simply call:
 ```python
 evaluator.compute_KEN_with_datasets(test_dataset: torch.utils.data.Dataset,
                                     ref_dataset: torch.utils.data.Dataset,
