@@ -30,7 +30,7 @@ evaluator.set_feature_extractor(name: str = 'dinov2', # feature extractor ['ince
 # Calculate KEN score and visualize novel modes of test_dataset w.r.t. ref_dataset
 evaluator.compute_KEN_with_datasets(test_dataset: torch.utils.data.Dataset,
                                     ref_dataset: torch.utils.data.Dataset,
-                                    cholesky_accleration: bool = True, # If true, enable Cholesky acceleration
+                                    cholesky_acceleration: bool = True, # If true, enable Cholesky acceleration
                                     retrieve_mode: bool = False) # If true, visualize top novel modes, save to './visuals/modes/' by default
 ```
 
@@ -79,5 +79,5 @@ Users can also directly evaluate KEN score with features (in torch.Tensor format
 ```python
 evaluator.compute_KEN_with_features(test_feats: torch.Tensor, 
                                     ref_feats: torch.Tensor, 
-                                    cholesky_accleration : bool):
+                                    cholesky_acceleration : bool):
 ```

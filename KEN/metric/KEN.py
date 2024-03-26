@@ -80,7 +80,7 @@ class KEN_Evaluator():
     def compute_KEN_with_datasets(self, 
                                   test_dataset: torch.utils.data.Dataset, 
                                   ref_dataset: torch.utils.data.Dataset, 
-                                  cholesky_accleration=False, 
+                                  cholesky_acceleration=False, 
                                   retrieve_mode = False):
         
         args = Namespace(num_samples=self.num_samples, 
@@ -135,7 +135,7 @@ class KEN_Evaluator():
         
         else:
             self.running_logger.info('Now calculating KEN score')
-            if cholesky_accleration:
+            if cholesky_acceleration:
                 KEN_by_cholesky_decomposition(test_feats, ref_feats, args)
             else:
                 KEN_by_eigendecomposition(test_feats, ref_feats, args)
@@ -143,7 +143,7 @@ class KEN_Evaluator():
     def compute_KEN_with_features(self, 
                                   test_feats: torch.Tensor, 
                                   ref_feats: torch.Tensor, 
-                                  cholesky_accleration=False):
+                                  cholesky_acceleration=False):
         
         args = Namespace(batchsize=self.batchsize, 
                          sigma=self.sigma, 
@@ -156,7 +156,7 @@ class KEN_Evaluator():
         self.running_logger.info('number of ref feats: {}'.format(ref_feats.shape[0]))
         
         self.running_logger.info('Now calculating KEN score')
-        if cholesky_accleration:
+        if cholesky_acceleration:
             KEN_by_cholesky_decomposition(test_feats, ref_feats, args)
         else:
             KEN_by_eigendecomposition(test_feats, ref_feats, args)
