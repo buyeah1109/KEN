@@ -56,7 +56,7 @@ KEN Parameters:
 $\sigma=20, \eta=5, \text{samples}=5000$ <br>
 Feature Extractor: DINOv2
 
-![top novel modes between datasets](./media/afhq_cat_dino.001.jpeg)
+![top novel modes between datasets with DINOv2](./media/afhq_cat_dino.001.jpeg)
 
 #### Example 2
 
@@ -64,7 +64,7 @@ KEN Parameters:
 $\sigma=5, \eta=5, \text{samples}=5000$ <br>
 Feature Extractor: CLIP
 
-![top novel modes between datasets](./media/afhq_cat_clip.001.jpeg)
+![top novel modes between datasets with CLIP](./media/afhq_cat_clip.001.jpeg)
 
 To retrieve novel modes, after setting up feature extractor, simply call:
 ```python
@@ -81,3 +81,7 @@ evaluator.compute_KEN_with_features(test_feats: torch.Tensor,
                                     ref_feats: torch.Tensor, 
                                     cholesky_acceleration : bool):
 ```
+
+## Additional Results
+### Qualitative Comparison between FLD, Rarity score and KEN
+![top novel modes between datasets with DINOv2](./media/baseline.001.png)
