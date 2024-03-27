@@ -2,6 +2,12 @@
 
 This repository provides an official implementation of a paper that under double-blind review. The repository will be de-anonymized and released to the public after the review process.
 
+## Quick Access
+[Code Descriptions](#quick-start) <br>
+[DINOv2 Example](#example-1) <br>
+[CLIP Example](#example-2) <br>
+[Qualitative Comparison between FLD, Rarity, and KEN](#qualitative-comparison-between-fld-rarity-score-and-ken) <br>
+
 ## Quick Start
 Pipeline:
 <ol>
