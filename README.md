@@ -4,8 +4,9 @@ This repository provides an official implementation of a paper that under double
 
 ## Quick Access
 [Code Descriptions](#quick-start) <br>
-[DINOv2 Example](#example-1) <br>
-[CLIP Example](#example-2) <br>
+[Inception-V3 Example](#example-1) <br>
+[DINOv2 Example](#example-2) <br>
+[CLIP Example](#example-3) <br>
 [Qualitative Comparison between FLD, Rarity, and KEN](#qualitative-comparison-between-fld-rarity-score-and-ken) <br>
 
 ## Quick Start
@@ -54,23 +55,31 @@ KEN provides an interpretable evaluation between datasets and generative models.
 
 ![top novel mode of AFHQ w.r.t. ImageNet dogs](./media/summary.png)
 ### Examples of Novel Modes Detection
-We provide some examples and their settings for the user to try on. We observe that all feature extractors can successfully detect novel modes, and different extractors may have different clustering preference (e.g. semantical/class similarity, visual similarity).
+We provide some examples and their settings for the user to try on. We observe that all feature extractors can successfully detect novel modes, and different extractors may lead to different clustering preference (e.g. semantic/class similarity, visual similarity).
 
 #### Example 1
 
 KEN Parameters: 
-$\sigma=20, \eta=5, \text{samples}=5000$ <br>
-Feature Extractor: DINOv2
+$\sigma=15, \eta=5, \text{samples}=5000$ <br>
+Feature Extractor: Inception-V3
 
-![top novel modes between datasets with DINOv2](./media/afhq_cat_dino.001.jpeg)
+![top novel modes between datasets with InceptionV3](./media/afhq_wild_inception.001.png)
 
 #### Example 2
+
+KEN Parameters: 
+$\sigma=40, \eta=10, \text{samples}=5000$ <br>
+Feature Extractor: DINOv2
+
+![top novel modes between datasets with DINOv2](./media/afhq_wild_dino.001.png)
+
+#### Example 3
 
 KEN Parameters: 
 $\sigma=5, \eta=5, \text{samples}=5000$ <br>
 Feature Extractor: CLIP
 
-![top novel modes between datasets with CLIP](./media/afhq_cat_clip.001.jpeg)
+![top novel modes between datasets with CLIP](./media/afhq_wild_clip.001.png)
 
 To retrieve novel modes, after setting up feature extractor, simply call:
 ```python
