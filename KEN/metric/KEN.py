@@ -81,7 +81,8 @@ class KEN_Evaluator():
                                   test_dataset: torch.utils.data.Dataset, 
                                   ref_dataset: torch.utils.data.Dataset, 
                                   cholesky_acceleration=False, 
-                                  retrieve_mode = False):
+                                  retrieve_mode = False,
+                                  retrieve_mode_from_both_sets = False):
         
         args = Namespace(num_samples=self.num_samples, 
                          batchsize=self.batchsize, 
@@ -91,7 +92,10 @@ class KEN_Evaluator():
                          backbone=self.name_feature_extractor,
                          visual_name=self.result_name,
                          current_time=self.current_time,
-                         path_save_visual='./visuals/modes'
+                         path_save_visual='./visuals/modes',
+                         num_visual_mode=10,
+                         num_img_per_mode=50,
+                         resize_img_to=224
         )
         
         self.running_logger.info("Num_samples_per_distribution: {}, Sigma: {}, Eta: {}".format(args.num_samples, args.sigma, args.eta))
@@ -111,7 +115,7 @@ class KEN_Evaluator():
                                                                     batchsize=args.batchsize)
             
             self.running_logger.info("Calculating ref feats:")
-            ref_feats, _ = self.feature_extractor.get_features_and_idxes(ref_dataset, 
+            ref_feats, ref_idxs = self.feature_extractor.get_features_and_idxes(ref_dataset, 
                                                                     name = 'ref_' + self.save_feats_name, 
                                                                     recompute=False, 
                                                                     num_samples=args.num_samples, 
@@ -122,14 +126,25 @@ class KEN_Evaluator():
         if retrieve_mode:
             self.running_logger.info('Now retrieving modes by top eigenvectors and calculating KEN score.')
 
-            visualize_mode_by_eigenvectors(test_feats, 
-                                           ref_feats, 
-                                           test_dataset, 
-                                           test_idxs, 
-                                           args, 
-                                           num_visual_mode=10, 
-                                           num_img_per_mode=25, 
-                                           print_KEN=True)
+            if retrieve_mode_from_both_sets:
+                self.running_logger.info('User select to retrieve samples from both test and ref set.')
+                visualize_mode_by_eigenvectors_in_both_sets(test_feats, 
+                                                            ref_feats, 
+                                                            test_dataset, 
+                                                            test_idxs, 
+                                                            ref_dataset, 
+                                                            ref_idxs, 
+                                                            args, 
+                                                            absolute=True,
+                                                            print_KEN=True)
+            else:
+                self.running_logger.info('User select to retrieve samples from test set only.')
+                visualize_mode_by_eigenvectors(test_feats, 
+                                                ref_feats, 
+                                                test_dataset, 
+                                                test_idxs, 
+                                                args,
+                                                print_KEN=True)
             
             self.running_logger.info('Finished.')
         

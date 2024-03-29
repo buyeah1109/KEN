@@ -4,7 +4,7 @@ from torch.linalg import eigh, eigvalsh, eigvals
 from torch.distributions import Categorical
 from torchvision.utils import save_image
 import os
-from torchvision.transforms import ToTensor
+from torchvision.transforms import ToTensor, Resize, Compose
 
 def normalized_gaussian_kernel(x, y, sigma, batchsize):
     '''
@@ -50,7 +50,7 @@ def print_novelty_metrics(eigenvalues, args):
     entropy = Categorical(probs = postive_eigenvalues).entropy()
     
     args.logger.info('Top eigenvalues: ' + str(postive_eigenvalues.topk(min(100, len(postive_eigenvalues))).values.data))
-    args.logger.info('Sum of positive eigenvalues: {:.4f}'.format(postive_eigenvalues.sum()))
+    args.logger.info('Sum of positive eigenvalues (Total novel frequency): {:.4f}'.format(postive_eigenvalues.sum()))
     args.logger.info('Sum of square of positive eigenvalues: {:.6f}'.format(postive_eigenvalues.pow(2).sum()))
     args.logger.info('Shannon Entropy: {:.4f}'.format(entropy))
     args.logger.info('KEN score: {:.4f}'.format(entropy * sum_of_postive_eigenvalues))
@@ -91,13 +91,20 @@ def build_matrix_cholesky(x, y, args):
 
     return matrix
 
-def visualize_mode_by_eigenvectors(x, y, dataset, idxs, args, num_visual_mode=10, num_img_per_mode=25, absolute=False, print_KEN=True):
+def visualize_mode_by_eigenvectors_in_both_sets(x, y, test_dataset, test_idxs, ref_dataset, ref_idxs, args, absolute=True, print_KEN=True):
+    '''
+        Retrieve the most similar samples to the top novel mode in both test set and ref set
+        This function could be used when user is interested on mode-similar samples in reference set as well
+        If the user wish to retrieve samples from the test dataset only, please use "visualize_mode_by_eigenvectors"
+
+        IMPORTANT:
+            argument "absolute" need to be set "True" if you wish to retrieve mode-similar samples in reference set
+            Otherwise, it will retrieve the least similar samples in reference set if "absolute=False"
+    '''
 
     fused_kernel_matrix = build_matrix(x, y, args)
-    idxs = idxs.to(dtype=torch.long)
-    # C, N, N = dataset[0][0].shape
-    # IMG_MEAN = torch.Tensor([0.485, 0.456, 0.406]).reshape((3, 1, 1)).repeat((1, N, N))
-    # IMG_STD = torch.Tensor([0.229, 0.224, 0.225]).reshape((3, 1, 1)).repeat((1, N, N))
+    test_idxs = test_idxs.to(dtype=torch.long)
+    ref_idxs = ref_idxs.to(dtype=torch.long)
 
     eigenvalues, eigenvectors = torch.linalg.eig(fused_kernel_matrix)
     eigenvalues = eigenvalues.real
@@ -106,20 +113,86 @@ def visualize_mode_by_eigenvectors(x, y, dataset, idxs, args, num_visual_mode=10
     if print_KEN:
         print_novelty_metrics(eigenvalues, args)
 
-    m, max_id = eigenvalues.topk(num_visual_mode)
+    m, max_id = eigenvalues.topk(args.num_visual_mode)
 
     now_time = args.current_time
 
-    to_tensor = ToTensor()
+    transform = []
+    if args.resize_img_to is not None:
+        transform += [Resize((args.resize_img_to, args.resize_img_to))]
+    transform += [ToTensor()]
+    transform = Compose(transform)
 
-    for i in range(num_visual_mode):
+    for i in range(args.num_visual_mode):
 
         top_eigenvector = eigenvectors[:, max_id[i]]
+        if top_eigenvector[:len(x)].sum() < 0:
+            top_eigenvector = -top_eigenvector
 
         if absolute:
             top_eigenvector = top_eigenvector.abs() 
+
         top_image_ids = top_eigenvector.sort(descending=True)[1]
-        save_folder_name = os.path.join(args.path_save_visual, 'backbone_{}/{}_num_{}_sigma_{}_eta_{}_{}/'.format(args.backbone, args.visual_name, args.num_samples, args.sigma, args.eta, now_time), 'top{}'.format(i+1))
+        save_folder_name = os.path.join(args.path_save_visual, 'backbone_{}/{}_{}/'.format(args.backbone, args.visual_name, now_time), 'top{}'.format(i+1))
+        os.makedirs(save_folder_name)
+        summary_test = []
+        summary_ref = []
+
+        cnt_saved_img_test = 0
+        cnt_saved_img_ref = 0
+
+
+        for j, top_image_id in enumerate(top_image_ids):
+            
+            if top_image_id >= args.num_samples and cnt_saved_img_ref < args.num_img_per_mode:
+                idx = ref_idxs[top_image_id-len(x)]
+                top_imgs = transform(ref_dataset[idx][0])
+                save_image(top_imgs, os.path.join(save_folder_name, '{}_ref.png'.format(cnt_saved_img_ref+1)), nrow=1)
+                summary_ref.append(top_imgs)
+                cnt_saved_img_ref += 1
+                
+            elif top_image_id < args.num_samples and cnt_saved_img_test < args.num_img_per_mode:
+                idx = test_idxs[top_image_id]
+                top_imgs = transform(test_dataset[idx][0])
+                save_image(top_imgs, os.path.join(save_folder_name, '{}.png'.format(cnt_saved_img_test+1)), nrow=1)
+                summary_test.append(top_imgs)
+                cnt_saved_img_test += 1
+
+
+            if cnt_saved_img_test >= args.num_img_per_mode and cnt_saved_img_ref >= args.num_img_per_mode:
+                break
+        
+        save_image(summary_test, os.path.join(save_folder_name, 'summary_test.png'.format(j)), nrow=5)
+        save_image(summary_ref, os.path.join(save_folder_name, 'summary_ref.png'.format(j)), nrow=5)
+
+def visualize_mode_by_eigenvectors(x, y, dataset, idxs, args, print_KEN=True):
+
+    fused_kernel_matrix = build_matrix(x, y, args)
+    idxs = idxs.to(dtype=torch.long)
+
+    eigenvalues, eigenvectors = torch.linalg.eig(fused_kernel_matrix)
+    eigenvalues = eigenvalues.real
+    eigenvectors = eigenvectors.real
+
+    if print_KEN:
+        print_novelty_metrics(eigenvalues, args)
+
+    m, max_id = eigenvalues.topk(args.num_visual_mode)
+
+    now_time = args.current_time
+
+    transform = []
+    if args.resize_img_to is not None:
+        transform += [Resize((args.resize_img_to, args.resize_img_to))]
+    transform += [ToTensor()]
+    transform = Compose(transform)
+
+    for i in range(args.num_visual_mode):
+
+        top_eigenvector = eigenvectors[:, max_id[i]]
+
+        top_image_ids = top_eigenvector.sort(descending=True)[1]
+        save_folder_name = os.path.join(args.path_save_visual, 'backbone_{}/{}_{}/'.format(args.backbone, args.visual_name, now_time), 'top{}'.format(i+1))
         os.makedirs(save_folder_name)
         summary = []
         cnt_saved_img = 0
@@ -130,13 +203,13 @@ def visualize_mode_by_eigenvectors(x, y, dataset, idxs, args, num_visual_mode=10
                 continue
             else:
                 idx = idxs[top_image_id]
-                top_imgs = to_tensor(dataset[idx][0])
+                top_imgs = transform(dataset[idx][0])
                 save_image(top_imgs, os.path.join(save_folder_name, '{}.png'.format(cnt_saved_img+1)), nrow=1)
                 cnt_saved_img += 1
 
             summary.append(top_imgs)
 
-            if cnt_saved_img >= num_img_per_mode:
+            if cnt_saved_img >= args.num_img_per_mode:
                 break
         
         save_image(summary, os.path.join(save_folder_name, 'summary.png'.format(j)), nrow=5)
