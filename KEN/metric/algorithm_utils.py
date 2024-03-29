@@ -190,6 +190,8 @@ def visualize_mode_by_eigenvectors(x, y, dataset, idxs, args, print_KEN=True):
     for i in range(args.num_visual_mode):
 
         top_eigenvector = eigenvectors[:, max_id[i]]
+        if top_eigenvector[:len(x)].sum() < 0:
+            top_eigenvector = -top_eigenvector
 
         top_image_ids = top_eigenvector.sort(descending=True)[1]
         save_folder_name = os.path.join(args.path_save_visual, 'backbone_{}/{}_{}/'.format(args.backbone, args.visual_name, now_time), 'top{}'.format(i+1))
