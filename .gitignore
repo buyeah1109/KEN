@@ -4,8 +4,8 @@ __pycache__/
 *$py.class
 
 *.log
-*/save
-*/visuals
+save/
+modes/
 
 # C extensions
 *.so
