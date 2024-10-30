@@ -24,8 +24,8 @@ class OpenAIExtractor(TextFeatureExtractor):
     def get_feature_batch(self, text_batch: Tuple[str, ...]):
         return torch.tensor(
             [
-                x.embedding
-                for x in self.client.embeddings.create(
+                obj.embedding
+                for obj in self.client.embeddings.create(
                     input=list(text_batch),
                     model=self.name,
                     dimensions=self.features_size,
